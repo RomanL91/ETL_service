@@ -1,10 +1,16 @@
-version: '3.8'
-
 services:
   app:
+    container_name: etl_service
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     ports:
       - "7777:7777"
+    networks:
+      - backend
     command: python main.py
+
+networks:
+  backend:
+    external: true
