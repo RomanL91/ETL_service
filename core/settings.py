@@ -7,6 +7,10 @@ from pydantic_settings import BaseSettings
 BASE_DIR = Path(__file__).parent.parent
 
 
+class SettingsETLSellerPositions(BaseModel):
+    url: str = "https://kaspi.kz/yml/offer-view/offers/{master_sku}"
+
+
 class SettingsETLproc1C(BaseModel):
     path_to_CSV: str = BASE_DIR.joinpath("PCSV2.csv")
     path_to_hourly_CSV: str = BASE_DIR.joinpath("CSV2.csv")
@@ -48,6 +52,7 @@ class Settings(BaseSettings):
     elt_1c: SettingsETLproc1C = SettingsETLproc1C()
     etl_kaspi: SettingsETLprocKaspi = SettingsETLprocKaspi()
     FTP_serv_cred: SettingsFTPServCred = SettingsFTPServCred()
+    etl_sellers_pos: SettingsETLSellerPositions = SettingsETLSellerPositions()
 
 
 settings = Settings()
