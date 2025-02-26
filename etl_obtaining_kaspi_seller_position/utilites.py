@@ -134,8 +134,8 @@ async def fetch_all(headers: dict, master_sku: str, city_ids: list):
 
     # Сохраняем результат в Redis
     print("_____________FINAL_____________")
-    data_redis = json.dumps(offers_list)
-    await redis_client.set(master_sku, data_redis)
+    # data_redis = json.dumps(offers_list)
+    # await redis_client.set(master_sku, data_redis)
     return master_sku
 
 
