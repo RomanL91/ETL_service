@@ -272,20 +272,21 @@ async def check_redis():
     while True:
         async with processing_lock:
             tasks_bytearray = await redis_tasks.get(redis_key)
+            tasks_403_bytearra = await redis_403.get(INSTANCE_NAME)
             if tasks_bytearray:
                 tasks = pickle.loads(tasks_bytearray)  # Десериализуем pickle
                 if tasks:
                     print(f"- tasks > {tasks} -> {type(tasks)}")
                     await process_tasks(tasks)
                     await redis_tasks.set(redis_key, pickle.dumps([]))
-            else:  # иначе проверим накопленные ошибки
-                tasks_403_bytearra = await redis_403.get(INSTANCE_NAME)
-                if tasks_403_bytearra:
-                    tasks_403 = pickle.loads(tasks_403_bytearra)
-                    if tasks_403:
-                        print(f"- tasks_403 > {tasks_403} -> {type(tasks_403)}")
-                        await process_tasks(tasks_403)
-                        await redis_403.set(INSTANCE_NAME, pickle.dumps([]))
+            # else:  # иначе проверим накопленные ошибки
+            # tasks_403_bytearra = await redis_403.get(INSTANCE_NAME)
+            if tasks_403_bytearra:
+                tasks_403 = pickle.loads(tasks_403_bytearra)
+                if tasks_403:
+                    print(f"- tasks_403 > {tasks_403} -> {type(tasks_403)}")
+                    await process_tasks(tasks_403)
+                    await redis_403.set(INSTANCE_NAME, pickle.dumps([]))
         # print("- DEBIUG PRINT check_redis END CYCLE -")
 
 
