@@ -1,6 +1,6 @@
 import random
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from etl_obtaining_kaspi_seller_position.utilites import fetch_all, check_redis
 
@@ -28,6 +28,13 @@ async def get_seller_position_from_kaspi(data: KaspiRequestConfig):
     return result
 
 
-@router.get("/check/")
-async def check(unic_key):
-    return await check_redis(unic_key)
+# @router.get("/check/")
+# async def check(unic_key):
+#     return await check_redis(unic_key)
+
+
+@router.get("/start-background-task")
+async def start_background_task(background_tasks: BackgroundTasks):
+    """Запускает фоновую задачу через API"""
+    background_tasks.add_task(check_redis)
+    return {"message": "Фоновая задача запущена!"}

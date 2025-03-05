@@ -39,8 +39,9 @@ headers = {
     "Accept-Encoding": "gzip, deflate, br, zstd",
     "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
-    "referer": "https://kaspi.kz/shop/p/brw-brest-domenika-00042337-180x200-sm-bez-pod-jomnogo-mehanizma-seryi-svetlo-korichnevyi-114968947/",
+    "referer": "https://kaspi.kz/",
     "Content-Type": "application/json",
+    # "referer": "https://kaspi.kz/shop/p/brw-brest-domenika-00042337-180x200-sm-bez-pod-jomnogo-mehanizma-seryi-svetlo-korichnevyi-114968947/",
     # "Origin": "https://kaspi.kz",
 }
 
@@ -51,7 +52,7 @@ response = requests.request(
     url,
     headers=headers,
     data=payload,
-    proxies=proxies,
+    # proxies=proxies,
     # verify=False,
 )
 
