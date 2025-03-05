@@ -10,21 +10,21 @@ from core import settings
 import redis.asyncio as redis
 
 redis_tasks = redis.Redis(
-    host="localhost",
+    host="185.100.67.246",
     port=6379,
     db=1,
     decode_responses=False,
 )
 
 redis_403 = redis.Redis(
-    host="localhost",
+    host="185.100.67.246",
     port=6379,
     db=2,
     decode_responses=False,
 )
 
 redis_result_db = redis.Redis(
-    host="localhost",
+    host="185.100.67.246",
     port=6379,
     db=3,
     decode_responses=False,
