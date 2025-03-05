@@ -220,7 +220,10 @@ async def fetch_data(session, city_id, master_sku):
                     )  # Выбираю случайный инстанс fastapi
                     failed_task = {"city_ids": [city_id], "master_sku": master_sku}
                     existing_403_tasks_bytearray = await redis_403.get(instance)
-                    existing_403_tasks = pickle.loads(existing_403_tasks_bytearray)
+                    if existing_403_tasks_bytearray:
+                        existing_403_tasks = pickle.loads(existing_403_tasks_bytearray)
+                    else:
+                        existing_403_tasks = []
 
                     existing_403_tasks.append(
                         failed_task
