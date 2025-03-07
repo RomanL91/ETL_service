@@ -2,7 +2,11 @@ import random
 
 from fastapi import APIRouter, BackgroundTasks
 
-from etl_obtaining_kaspi_seller_position.utilites import fetch_all, check_redis
+from etl_obtaining_kaspi_seller_position.utilites import (
+    fetch_all,
+    check_redis,
+    check_prod_position,
+)
 
 from etl_obtaining_kaspi_seller_position.schemas import KaspiRequestConfig
 
@@ -28,9 +32,9 @@ async def get_seller_position_from_kaspi(data: KaspiRequestConfig):
     return result
 
 
-# @router.get("/check/")
-# async def check(unic_key):
-#     return await check_redis(unic_key)
+@router.get("/check/")
+async def check(unic_key):
+    return await check_prod_position(unic_key)
 
 
 @router.get("/start-background-task")

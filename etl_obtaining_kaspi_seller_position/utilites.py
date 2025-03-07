@@ -164,7 +164,7 @@ import pickle
 
 # Настройка FastAPI
 INSTANCE_NAME = "FA1"  # Для второго инстанса поменять на "FA2"
-OTHER_INSTANCES = ["FA1", "FA2"]
+OTHER_INSTANCES = ["FA1", "FA2", "FA3"]
 OTHER_INSTANCES.remove(INSTANCE_NAME)
 FASTAPI_403 = f"fastapi:403"
 
@@ -219,19 +219,31 @@ async def fetch_data(session, city_id, master_sku):
                         OTHER_INSTANCES
                     )  # Выбираю случайный инстанс fastapi
                     failed_task = {"city_ids": [city_id], "master_sku": master_sku}
-                    existing_403_tasks_bytearray = await redis_403.get(instance)
-                    if existing_403_tasks_bytearray:
-                        existing_403_tasks = pickle.loads(existing_403_tasks_bytearray)
-                    else:
-                        existing_403_tasks = []
+                    async with redis_403.pipeline(transaction=True) as pipe:
+                        try:
+                            await pipe.watch(instance)
+                            existing_403_tasks = await redis_403.get(instance)
 
-                    existing_403_tasks.append(
-                        failed_task
-                    )  # добавим в список провальную задачу
-                    await redis_403.set(
-                        instance, pickle.dumps(existing_403_tasks), ex=3600
-                    )
-                    print(f"🔄 Задача {master_sku} ({city_id}) сохранена в {instance}")
+                            if existing_403_tasks:
+                                existing_403_tasks = pickle.loads(existing_403_tasks)
+                            else:
+                                existing_403_tasks = []
+
+                            existing_403_tasks.append(failed_task)
+
+                            await pipe.multi()
+                            pipe.set(
+                                instance, pickle.dumps(existing_403_tasks), ex=3600
+                            )
+                            await pipe.execute()
+                            print(
+                                f"🔄 Задача {master_sku} ({city_id}) сохранена в {instance}"
+                            )
+
+                        except redis.WatchError:
+                            print(
+                                f"🔁 Конфликт при обновлении fastapi:403:{instance}, повторяем попытку..."
+                            )
                 except Exception as e:
                     print(f"- e -> {e}")
             else:
@@ -286,10 +298,40 @@ async def check_redis():
                 if tasks_403:
                     print(f"- tasks_403 > {tasks_403} -> {type(tasks_403)}")
                     await process_tasks(tasks_403)
-                    await redis_403.set(INSTANCE_NAME, pickle.dumps([]))
+
+                    # Используем транзакцию Redis для безопасного удаления обработанных задач
+                    async with redis_403.pipeline(transaction=True) as pipe:
+                        try:
+                            await pipe.watch(INSTANCE_NAME)
+                            current_tasks = await redis_403.get(INSTANCE_NAME)
+
+                            if current_tasks:
+                                current_tasks = pickle.loads(current_tasks)
+                            else:
+                                current_tasks = []
+
+                            # Убираем из списка только обработанные задачи
+                            for processed_task in tasks_403:
+                                if processed_task in current_tasks:
+                                    current_tasks.remove(processed_task)
+
+                            # Обновляем список задач в Redis
+                            await pipe.multi()
+                            pipe.set(
+                                INSTANCE_NAME, pickle.dumps(current_tasks), ex=3600
+                            )
+                            await pipe.execute()
+                            print(
+                                f"[{INSTANCE_NAME}] ✅ Очередь 403 обновлена, удалены обработанные задачи."
+                            )
+
+                        except redis.WatchError:
+                            print(
+                                f"🔁 Конфликт при обновлении fastapi:403:{INSTANCE_NAME}, повторяем попытку..."
+                            )
         # print("- DEBIUG PRINT check_redis END CYCLE -")
 
 
-# async def check_redis(unic_key):
-#     data = json.loads(await redis_client.get(unic_key))
-#     return data
+async def check_prod_position(unic_key):
+    data = json.loads(await redis_result_db.get(unic_key))
+    return data
