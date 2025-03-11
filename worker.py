@@ -17,7 +17,7 @@ HEADERS = {
     "Content-Type": "application/json",
 }
 
-RABBITMQ_HOST = "amqp://guest:guest@localhost/"
+RABBITMQ_HOST = "amqp://guest:guest@185.100.67.246/"
 
 app = FastAPI()
 
